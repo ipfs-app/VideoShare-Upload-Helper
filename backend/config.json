@@ -1,0 +1,17 @@
+{
+  "projectName": "VideoShare Upload Helper",
+  "service": {
+    "host": "127.0.0.1",
+    "port": 7200,
+    "workers": 1
+  },
+  "local-storage": "/data/test",
+  "video-key-range": "0123456789",
+  "rabbitmq": {
+    "host": "127.0.0.1",
+    "queuename": "upload",
+    "user": "guest",
+    "pass": "guest"
+  },
+  "database": "upload.db"
+}

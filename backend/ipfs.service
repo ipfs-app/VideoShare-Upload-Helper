@@ -1,0 +1,10 @@
+[Unit]
+Description=ipfs node
+[Service]
+Environment="IPFS_PATH=/data/ipfsrepo"
+ExecStart=/usr/local/bin/ipfs daemon --enable-pubsub-experiment --enable-gc
+Restart=always
+User=root
+Group=root
+[Install]
+WantedBy=multi-user.target
