@@ -1,7 +1,7 @@
 import json
 import os
 import sqlite3
-from fastapi import FastAPI, UploadFile, File, HTTPException
+from fastapi import FastAPI, UploadFile, File, HTTPException, Form
 import random
 import string
 import pika
@@ -89,28 +89,26 @@ def get_video(date: str, id: str, secret: str):
     else:
         return {"error": "video not found"}
 
-class Item(BaseModel):
-    title: str = ""
-
-m = Item.model_validate({'title': "abc"})
-print(m)
 # 访问路径/save_video 
 @app.post("/save_video")
-def file_upload(file: UploadFile = File(...), cover: UploadFile = File(...), item: Item = {}):
+def file_upload(video: UploadFile = File(...), cover: UploadFile = File(...), id: str = Form(...),date: str = Form(...),secret: str = Form(...),title: str = Form(...),describe: str = Form(...)):
     conn = sqlite3.connect('test.db')
     c = conn.cursor()
-    c.execute("SELECT * FROM videos WHERE video_id=? AND date=? AND secret_key=?", (item.id, item.date, item.secret))
+    c.execute("SELECT * FROM videos WHERE video_id=? AND date=? AND secret_key=?", (id, date, secret))
     result = c.fetchone()
     conn.close()
     if not result:
         return {"error": "video not found"}
 
-    with open(os.path.join(conf["local-storage"],item.date,item.id,"video.mp4"), 'wb') as f:
-        for i in iter(lambda: file.file.read(1024 * 1024 * 10), b''):
+    if not os.path.exists(os.path.join(conf["local-storage"],date,id)):
+        os.makedirs(os.path.join(conf["local-storage"],date,id))
+    # 保存文件
+    with open(os.path.join(conf["local-storage"],date,id,"video.mp4"), 'wb') as f:
+        for i in iter(lambda: video.file.read(1024 * 1024 * 10), b''):
             f.write(i)
     f.close()
-    with open(os.path.join(conf["local-storage"],item.date,item.id,"cover.jpg"), 'wb') as f:
-        for i in iter(lambda: file.file.read(1024 * 1024 * 10), b''):
+    with open(os.path.join(conf["local-storage"],date,id,"cover.jpg"), 'wb') as f:
+        for i in iter(lambda: cover.file.read(1024 * 1024 * 10), b''):
             f.write(i)
     f.close()
     # 更新数据库中的其他字段
@@ -118,12 +116,12 @@ def file_upload(file: UploadFile = File(...), cover: UploadFile = File(...), ite
     conn = sqlite3.connect('test.db')
     c = conn.cursor()
     c.execute("UPDATE videos SET title=?, describe=?, WHERE video_id=? AND date=? AND secret_key=?",
-              (item.title, item.describe, item.id, item.date, item.secret))
+              (title, describe, id, date, secret))
     conn.commit()
     conn.close()
     
     # 向mq发送消息
-    message = {"id": item.id, "date": item.date, "secret": item.secret}
+    message = {"id": id, "date": date, "secret": secret}
     chan.basic_publish(exchange='', routing_key=conf['rabbitmq']['queuename'], body=json.dumps(message),
                        properties=pika.BasicProperties(delivery_mode=2))
 
