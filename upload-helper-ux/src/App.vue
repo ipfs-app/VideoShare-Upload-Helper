@@ -29,7 +29,7 @@
       </div>
     </div>
     <div class="row">
-      <div class="col-12">
+      <div class="col-12" v-if="state=='notReady'">
         <h2>setp1: 填写资料</h2>
         <div class="mb-3">
           <label for="videofile" class="form-label">视频文件：</label>
@@ -49,17 +49,17 @@
         </div>
         <button type="button" class="btn btn-success" @click="save_video">确认上传</button>
       </div>
-      <div class="col-12">
+      <div class="col-12" v-if="state=='progress'">
         <h2>setp2: 等待上传</h2>
-        正在发布中... 00:05:32
+        正在发布中... {{ progress_time }}
       </div>
-      <div class="col-12">
+      <div class="col-12" v-if="state=='ready'">
         <h2>setp3: 查看视频</h2>
         <div class="mb-3">
-          <a href="#">点击查看</a>
+          <a :href="json_hash" target="_blank">点击查看</a>
         </div>
         <div class="mb-3">
-          files.json hash:
+          files.json hash: {{ json_hash }}
         </div>
         <div class="mb-3">
           播放地址: https://ipfs.io/ipfs/bs1/#files.json=bs123123
@@ -81,6 +81,9 @@ const title = ref("")
 const describe = ref("")
 const videofile = ref(null)
 const coverfile = ref(null)
+const state = ref("")
+const progress_time = ref(0)
+const json_hash = ref("")
 let local_video_list = JSON.parse(window.localStorage.getItem("video_list"))
 if (!local_video_list) {
   local_video_list = []
@@ -109,6 +112,7 @@ function create_video() {
     video_list2.value.push({"id": res.data.id, secret: res.data.secret, "title": ""})
     window.localStorage.setItem("video_"+res.data.date, JSON.stringify(video_list2.value))
     video_select2.value = res.data.id
+    video_change2()
   })
 }
 function video_change(){
@@ -119,10 +123,30 @@ function video_change(){
   }
   video_list2.value = local_video_list2
   video_select2.value = video_list2.value[0].id
+  video_change2()
 }
 function video_change2(){
-
+  check_video()
 }
+function check_video(){
+  Axios.get('/get_video?date='+video_select.value+'&id='+video_select2.value+'&secret='+video_list2.value.find(video => video.id === video_select2.value).secret).then((res) => {
+    state.value = res.data.data.state
+    switch (res.data.data.state) {
+      case "notReady":
+        title.value = res.data.data.title
+        describe.value = res.data.data.describe
+        break
+      case "progress":
+        progress_time.value = res.data.data.startTime
+        setTimeout(check_video, 1000)
+        break
+      case "ready":
+        json_hash.value = res.data.data.json_hash
+        break
+    }
+  })
+}
+
 function save_video(){
   Axios.post('/save_video', {
     id: video_select2.value,

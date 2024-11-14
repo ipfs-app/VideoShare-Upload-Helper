@@ -2,7 +2,7 @@ import json
 import os
 import re
 import time
-
+import sqlite3
 import pika
 
 
@@ -35,14 +35,16 @@ def callback(ch, method, properties, body):
     video_path = os.path.join(conf["local-storage"], data['date'],data['id'],  "video.mp4")
     result = os.popen(f"ipfs add -s size-1048576 --nocopy --cid-version 1 {video_path}").read()
     video_hash = re.search(r'added\s+(\w+)', result).group(1)
+    result = os.popen(f"ipfs files cp -p  /ipfs/{video_hash} /{data['date']}/{data['id']}/video.mp4").read()
 
     # 将视封面件添加到ipfs
     cover_path = os.path.join(conf["local-storage"], data['date'],data['id'],  "cover.jpg")
     result = os.popen(f"ipfs add -s size-1048576 --nocopy --cid-version 1 {cover_path}").read()
     cover_hash = re.search(r'added\s+(\w+)', result).group(1)
+    result = os.popen(f"ipfs files cp -p  /ipfs/{cover_hash} /{data['date']}/{data['id']}/cover.jpg").read()
 
     # 获取ffmpeg信息
-    v_info = json.loads(os.popen(f"ffprobe -v quiet -print_format json -show_format -show_streams {video_path}").read())
+    v_info = json.loads(os.popen(f"cd /{conf["local-storage"]}/{data['date']}/{data['id']};ffprobe -v quiet -print_format json -show_format -show_streams video.mp4").read())
     # 查询数据
     conn = sqlite3.connect('test.db')
     c = conn.cursor()
@@ -53,12 +55,12 @@ def callback(ch, method, properties, body):
     json_data = {
         'title': result[5],
         'describe': result[6],
-        'cover': cover_hash,
+        'cover': "/ipfs/%s" % cover_hash,
         'files': [{
-            'title': data['title'],
+            'title': result[5],
             'size': int(v_info['format']['size']),
             'duration': int(float(v_info['format']['duration'])),
-            'url': video_hash,
+            'url': "/ipfs/%s" % video_hash,
             'type': "mp4",
             'mediainfo': v_info
         }]
@@ -66,7 +68,7 @@ def callback(ch, method, properties, body):
     # 保存json文件
     json_file = os.path.join(conf["local-storage"], data['date'],data['id'], 'files.json')
     file = open(json_file, 'w')
-    json.dump(out, file, ensure_ascii=False)
+    json.dump(json_data, file, ensure_ascii=False)
     file.close()
     
     result = os.popen(f"ipfs add -s size-1048576 --nocopy --cid-version 1 {json_file}").read()
@@ -78,7 +80,7 @@ def callback(ch, method, properties, body):
     conn = sqlite3.connect('test.db')
     c = conn.cursor()
     c.execute("UPDATE videos SET json_hash=?,end_time=?,state=? WHERE video_id=? AND date=? AND secret_key=?",
-              (video_hash,int(time.time()),"ready", data['id'], data['date'], data['secret']))
+              ("/ipfs/%s" % json_hash, int(time.time()), "ready", data['id'], data['date'], data['secret']))
     conn.commit()
     conn.close()
     # 发送确认消息

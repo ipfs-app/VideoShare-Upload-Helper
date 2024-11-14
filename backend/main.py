@@ -1,11 +1,9 @@
 import json
 import os
 import sqlite3
-from fastapi import FastAPI, UploadFile, File, HTTPException, Form
+from fastapi import FastAPI, UploadFile, File, Form
 import random
-import string
 import pika
-from pydantic import BaseModel
 
 app = FastAPI()
 
@@ -81,11 +79,11 @@ def get_video(date: str, id: str, secret: str):
         return {"error": "video not found"}
     state = result[4]
     if state == "notReady":
-        return {"data": {"title": result[5],"describe": result[6],}}
+        return {"data": {"title": result[5],"describe": result[6], "state":"notReady"}}
     elif state == "progress":
-        return {"data": {"startTime": result[8]}}
+        return {"data": {"startTime": result[8], "state":"progress"}}
     elif state == "ready":
-        return {"data": {"json_hash": result[7]}}
+        return {"data": {"json_hash": result[7], "state":"ready"}}
     else:
         return {"error": "video not found"}
 
@@ -115,7 +113,7 @@ def file_upload(video: UploadFile = File(...), cover: UploadFile = File(...), id
 
     conn = sqlite3.connect('test.db')
     c = conn.cursor()
-    c.execute("UPDATE videos SET title=?, describe=?, WHERE video_id=? AND date=? AND secret_key=?",
+    c.execute("UPDATE videos SET title=?, describe=? WHERE video_id=? AND date=? AND secret_key=?",
               (title, describe, id, date, secret))
     conn.commit()
     conn.close()

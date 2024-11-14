@@ -29,3 +29,5 @@ ipfs config --json Experimental.FilestoreEnabled true
 
 systemctl enable ipfs.service
 systemctl start ipfs.service
+
+apt install ffmpeg -y
