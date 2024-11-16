@@ -17,20 +17,20 @@
         <button type="button" class="btn btn-success" v-on:click="create_video">新建视频</button>
       </div>
     </div>
-    <div class="row">
-      <div class="col-3">
+    <div class="row text-center setpdev">
+      <div :class="'col-3 '+css1">
         setp1: 填写资料
       </div>
-      <div class="col-1">
+      <div :class="'col-1 '+css2">
         >>
       </div>
-      <div class="col-3">
+      <div :class="'col-3 '+css2">
         setp2: 等待上传
       </div>
-      <div class="col-1">
+      <div :class="'col-1 '+css3">
         >>
       </div>
-      <div class="col-3">
+      <div :class="'col-3 '+css3">
         setp3: 查看视频
       </div>
     </div>
@@ -68,7 +68,7 @@
           files.json hash: {{ json_hash }}
         </div>
         <div class="mb-3">
-          播放地址: ${{ player }}#files.json=${{ json_hash }}
+          播放地址: https://ipfs.io{{ player }}#files.json={{ json_hash }}
         </div>
       </div>
     </div>
@@ -88,9 +88,12 @@ const describe = ref("")
 const videofile = ref(null)
 const coverfile = ref(null)
 const state = ref("")
-const progress_time = ref(0)
+const progress_time = ref("")
 const json_hash = ref("")
 const player = ref("")
+const css1=ref("")
+const css2=ref("")
+const css3=ref("")
 let local_video_list = JSON.parse(window.localStorage.getItem("video_list"))
 if (!local_video_list) {
   local_video_list = []
@@ -135,21 +138,41 @@ function video_change(){
 function video_change2(){
   check_video()
 }
+function formatDateTime(date) {
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, '0'); // 月份从0开始，所以加1
+  const day = String(date.getDate()).padStart(2, '0');
+  const hours = String(date.getHours()).padStart(2, '0');
+  const minutes = String(date.getMinutes()).padStart(2, '0');
+  const seconds = String(date.getSeconds()).padStart(2, '0');
+
+  return `${year}-${month}-${day} ${hours}:${minutes}:${seconds}`;
+}
 function check_video(){
+  
   Axios.get('/get_video?date='+video_select.value+'&id='+video_select2.value+'&secret='+video_list2.value.find(video => video.id === video_select2.value).secret).then((res) => {
     state.value = res.data.data.state
     switch (res.data.data.state) {
       case "notReady":
         title.value = res.data.data.title
         describe.value = res.data.data.describe
+        css1.value = "setpdev_sel"
+        css2.value = ""
+        css3.value = ""
         break
       case "progress":
-        progress_time.value = res.data.data.startTime
+        progress_time.value = "启动时间: "+formatDateTime(new Date(res.data.data.startTime*1000))+" 运行时间: "+Math.round(Date.now()/1000 - res.data.data.startTime)+"s";
         setTimeout(check_video, 1000)
+        css1.value = "setpdev_sel"
+        css2.value = "setpdev_sel"
+        css3.value = ""
         break
       case "ready":
         json_hash.value = res.data.data.json_hash
         player.value = res.data.data.player
+        css1.value = "setpdev_sel"
+        css2.value = "setpdev_sel"
+        css3.value = "setpdev_sel"
         break
     }
   })
@@ -176,5 +199,13 @@ function save_video(){
 }
 </script>
 <style scoped>
-
+.setpdev > div {
+  font-size: 2em;
+  font-weight: bold;
+  color: #999;
+  transition-duration: 0.5s;
+}
+.setpdev > div.setpdev_sel{
+  color: #008000;
+}
 </style>

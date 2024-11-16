@@ -1,0 +1,9 @@
+[Unit]
+Description=vs upload helper
+[Service]
+ExecStart=/usr/bin/python3 /opt/vs-upload-helper/vs-upload-runner.py
+Restart=always
+User=root
+Group=root
+[Install]
+WantedBy=multi-user.target

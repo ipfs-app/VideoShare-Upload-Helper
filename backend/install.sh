@@ -4,9 +4,7 @@ apt update
 apt install python3-pip -y
 mv /usr/lib/python3.12/EXTERNALLY-MANAGED{,.bak}
 pip config set global.index-url https://pypi.tuna.tsinghua.edu.cn/simple
-
 pip3 install -r requirements.txt
-
 apt install rabbitmq-server -y
 
 # install ipfs
@@ -39,3 +37,18 @@ storage=$(cat config.json | jq -r .local-storage)
 if [ ! -d ${storage} ];then
     mkdir -p ${storage}
 fi
+
+# install app
+mkdir /opt/vs-upload-helper
+cp *.py /opt/vs-upload-helper/
+cp config.json /opt/vs-upload-helper/
+cp vs-upload-helper.service /lib/systemd/system/vs-upload-helper.service
+cp vs-upload-runner.service /etc/systemd/system/vs-upload-runner.service
+systemctl enable vs-upload-helper.service
+systemctl start vs-upload-helper.service
+systemctl enable vs-upload-runner.service
+systemctl start vs-upload-runner.service
+
+
+apt install -y nginx-full
+cp vs-upload-helper.conf /etc/nginx/sites-enabled/default
