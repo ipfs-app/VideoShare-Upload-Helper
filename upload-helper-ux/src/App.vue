@@ -18,13 +18,19 @@
       </div>
     </div>
     <div class="row">
-      <div class="col-4">
+      <div class="col-3">
         setp1: 填写资料
       </div>
-      <div class="col-4">
+      <div class="col-1">
+        >>
+      </div>
+      <div class="col-3">
         setp2: 等待上传
       </div>
-      <div class="col-4">
+      <div class="col-1">
+        >>
+      </div>
+      <div class="col-3">
         setp3: 查看视频
       </div>
     </div>
@@ -56,13 +62,13 @@
       <div class="col-12" v-if="state=='ready'">
         <h2>setp3: 查看视频</h2>
         <div class="mb-3">
-          <a :href="json_hash" target="_blank">点击查看</a>
+          <a :href="player+'#files.json='+json_hash" target="_blank">点击查看</a>
         </div>
         <div class="mb-3">
           files.json hash: {{ json_hash }}
         </div>
         <div class="mb-3">
-          播放地址: https://ipfs.io/ipfs/bs1/#files.json=bs123123
+          播放地址: ${{ player }}#files.json=${{ json_hash }}
         </div>
       </div>
     </div>
@@ -84,6 +90,7 @@ const coverfile = ref(null)
 const state = ref("")
 const progress_time = ref(0)
 const json_hash = ref("")
+const player = ref("")
 let local_video_list = JSON.parse(window.localStorage.getItem("video_list"))
 if (!local_video_list) {
   local_video_list = []
@@ -142,6 +149,7 @@ function check_video(){
         break
       case "ready":
         json_hash.value = res.data.data.json_hash
+        player.value = res.data.data.player
         break
     }
   })

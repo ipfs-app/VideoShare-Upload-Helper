@@ -17,6 +17,9 @@ cp kubo/ipfs /usr/local/bin/
 sed -i "/IPFS_PATH/d" /etc/profile
 echo "export IPFS_PATH=/data/ipfsrepo" >> /etc/profile
 source /etc/profile
+if [ ! -d ${IPFS_PATH} ];then
+    mkdir -p ${IPFS_PATH}
+fi
 
 cp ipfs.service /lib/systemd/system/ipfs.service
 
@@ -31,3 +34,8 @@ systemctl enable ipfs.service
 systemctl start ipfs.service
 
 apt install ffmpeg -y
+apt install jq -y
+storage=$(cat config.json | jq -r .local-storage)
+if [ ! -d ${storage} ];then
+    mkdir -p ${storage}
+fi

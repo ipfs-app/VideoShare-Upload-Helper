@@ -24,7 +24,7 @@ chan.queue_declare(queue=conf['rabbitmq']['queuename'], durable=True)
 def callback(ch, method, properties, body):
     data = json.loads(body.decode('UTF-8'))
     # 更新数据库的start_time字段
-    conn = sqlite3.connect('test.db')
+    conn = sqlite3.connect(conf['database'])
     c = conn.cursor()
     c.execute("UPDATE videos SET start_time=?,state=? WHERE video_id=? AND date=? AND secret_key=?",
               (int(time.time()),"progress", data['id'], data['date'], data['secret']))
@@ -46,7 +46,7 @@ def callback(ch, method, properties, body):
     # 获取ffmpeg信息
     v_info = json.loads(os.popen(f"cd /{conf["local-storage"]}/{data['date']}/{data['id']};ffprobe -v quiet -print_format json -show_format -show_streams video.mp4").read())
     # 查询数据
-    conn = sqlite3.connect('test.db')
+    conn = sqlite3.connect(conf['database'])
     c = conn.cursor()
     c.execute("SELECT * FROM videos WHERE video_id=? AND date=? AND secret_key=?", (data['id'], data['date'], data['secret']))
     result = c.fetchone()
@@ -77,7 +77,7 @@ def callback(ch, method, properties, body):
 
 
     # 更新数据库的json_hash字段
-    conn = sqlite3.connect('test.db')
+    conn = sqlite3.connect(conf['database'])
     c = conn.cursor()
     c.execute("UPDATE videos SET json_hash=?,end_time=?,state=? WHERE video_id=? AND date=? AND secret_key=?",
               ("/ipfs/%s" % json_hash, int(time.time()), "ready", data['id'], data['date'], data['secret']))

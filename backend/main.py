@@ -21,7 +21,7 @@ chan = s_conn.channel()
 chan.queue_declare(queue=conf['rabbitmq']['queuename'], durable=True)
 
 def init_db():
-    conn = sqlite3.connect('test.db')  # 连接到数据库，如果数据库不存在则会创建
+    conn = sqlite3.connect(conf['database'])  # 连接到数据库，如果数据库不存在则会创建
     c = conn.cursor()  # 创建一个游标对象
     # 创建一个表
     c.execute('''CREATE TABLE IF NOT EXISTS videos
@@ -50,7 +50,7 @@ def create_video():
     import datetime
     now = datetime.datetime.now()
     now = now.strftime("%Y%m%d")
-    conn = sqlite3.connect('test.db')
+    conn = sqlite3.connect(conf['database'])
     flag = True
     while flag:
         video_id = random_id(4)
@@ -70,7 +70,7 @@ def create_video():
 # 访问路径/get_video 函数
 @app.get("/get_video")
 def get_video(date: str, id: str, secret: str):
-    conn = sqlite3.connect('test.db')
+    conn = sqlite3.connect(conf['database'])
     c = conn.cursor()
     c.execute("SELECT * FROM videos WHERE video_id=? AND date=? AND secret_key=?", (id, date, secret))
     result = c.fetchone()
@@ -79,18 +79,18 @@ def get_video(date: str, id: str, secret: str):
         return {"error": "video not found"}
     state = result[4]
     if state == "notReady":
-        return {"data": {"title": result[5],"describe": result[6], "state":"notReady"}}
+        return {"data": {"title": result[5], "describe": result[6], "state":"notReady"}}
     elif state == "progress":
         return {"data": {"startTime": result[8], "state":"progress"}}
     elif state == "ready":
-        return {"data": {"json_hash": result[7], "state":"ready"}}
+        return {"data": {"json_hash": result[7],"player": conf['player'], "state":"ready"}}
     else:
         return {"error": "video not found"}
 
 # 访问路径/save_video 
 @app.post("/save_video")
 def file_upload(video: UploadFile = File(...), cover: UploadFile = File(...), id: str = Form(...),date: str = Form(...),secret: str = Form(...),title: str = Form(...),describe: str = Form(...)):
-    conn = sqlite3.connect('test.db')
+    conn = sqlite3.connect(conf['database'])
     c = conn.cursor()
     c.execute("SELECT * FROM videos WHERE video_id=? AND date=? AND secret_key=?", (id, date, secret))
     result = c.fetchone()
@@ -111,7 +111,7 @@ def file_upload(video: UploadFile = File(...), cover: UploadFile = File(...), id
     f.close()
     # 更新数据库中的其他字段
 
-    conn = sqlite3.connect('test.db')
+    conn = sqlite3.connect(conf['database'])
     c = conn.cursor()
     c.execute("UPDATE videos SET title=?, describe=? WHERE video_id=? AND date=? AND secret_key=?",
               (title, describe, id, date, secret))
@@ -129,7 +129,7 @@ if __name__ == '__main__':
     import uvicorn
 
     # 如果本地数据库文件不存在则运行init_db
-    if not os.path.exists('test.db'):
+    if not os.path.exists(conf['database']):
         init_db()
 
     runConf = conf['service']

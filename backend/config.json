@@ -5,7 +5,7 @@
     "port": 7200,
     "workers": 1
   },
-  "local-storage": "/data/test",
+  "local-storage": "/data/store",
   "video-key-range": "0123456789",
   "rabbitmq": {
     "host": "127.0.0.1",
@@ -13,5 +13,6 @@
     "user": "guest",
     "pass": "guest"
   },
-  "database": "upload.db"
+  "database": "upload.db",
+  "player": "/ipfs/bafybeibwh5xkfbsndltam66jc5srfpuscwxtxhych2qtnwqnrfj7mxacqa"
 }
