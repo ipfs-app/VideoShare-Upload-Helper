@@ -31,6 +31,7 @@ ipfs config --json Experimental.FilestoreEnabled true
 systemctl enable ipfs.service
 systemctl start ipfs.service
 
+# install ffmpeg
 apt install ffmpeg -y
 apt install jq -y
 storage=$(cat config.json | jq -r 'to_entries|.[]| select(.key == "local-storage")|.value')
@@ -49,6 +50,7 @@ systemctl start vs-upload-helper.service
 systemctl enable vs-upload-runner.service
 systemctl start vs-upload-runner.service
 
-
+# install nginx
 apt install -y nginx-full
 cp vs-upload-helper.conf /etc/nginx/sites-enabled/default
+systemctl restart nginx

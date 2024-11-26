@@ -2,6 +2,7 @@
 Description=vs upload helper
 [Service]
 WorkingDirectory=/opt/vs-upload-helper
+Environment="IPFS_PATH=/data/ipfsrepo"
 ExecStart=/usr/bin/python3 /opt/vs-upload-helper/runner.py
 Restart=always
 User=root
