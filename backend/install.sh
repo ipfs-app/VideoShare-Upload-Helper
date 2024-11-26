@@ -43,7 +43,7 @@ mkdir /opt/vs-upload-helper
 cp *.py /opt/vs-upload-helper/
 cp config.json /opt/vs-upload-helper/
 cp vs-upload-helper.service /lib/systemd/system/vs-upload-helper.service
-cp vs-upload-runner.service /etc/systemd/system/vs-upload-runner.service
+cp vs-upload-runner.service /lib/systemd/system/vs-upload-runner.service
 systemctl enable vs-upload-helper.service
 systemctl start vs-upload-helper.service
 systemctl enable vs-upload-runner.service

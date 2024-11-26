@@ -1,6 +1,7 @@
 [Unit]
 Description=vs upload helper
 [Service]
+WorkingDirectory=/opt/vs-upload-helper
 ExecStart=/usr/bin/python3 /opt/vs-upload-helper/main.py
 Restart=always
 User=root
