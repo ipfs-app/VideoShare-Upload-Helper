@@ -33,7 +33,7 @@ systemctl start ipfs.service
 
 apt install ffmpeg -y
 apt install jq -y
-storage=$(cat config.json | jq -r .local-storage)
+storage=$(cat config.json | jq -r 'to_entries|.[]| select(.key == "local-storage")|.value')
 if [ ! -d ${storage} ];then
     mkdir -p ${storage}
 fi
