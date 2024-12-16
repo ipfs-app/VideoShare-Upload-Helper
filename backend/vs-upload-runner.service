@@ -1,5 +1,7 @@
 [Unit]
 Description=vs upload helper
+After=rabbitmq-server.service
+Requires=rabbitmq-server.service
 [Service]
 WorkingDirectory=/opt/vs-upload-helper
 Environment="IPFS_PATH=/data/ipfsrepo"
