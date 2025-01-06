@@ -2,6 +2,14 @@
   <div class="container">
     <div class="row">
       <div class="col-2">
+        <a href="index.html">最近更新</a> 
+      </div>
+      <div class="col-2">
+        <a href="upload.html">上传页面</a>
+      </div>
+    </div>
+    <div class="row">
+      <div class="col-2">
         日期
         <select class="form-select" v-model="video_select" @change="video_change">
           <option v-for="video in video_list" :value="video.date">{{ video.date }}</option>

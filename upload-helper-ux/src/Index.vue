@@ -2,7 +2,9 @@
   <div class="container">
     <div class="row">
       <div class="col-2">
-        <a href="index.html">最近更新</a>
+        <a href="index.html">最近更新</a> 
+      </div>
+      <div class="col-2">
         <a href="upload.html">上传页面</a>
       </div>
     </div>
