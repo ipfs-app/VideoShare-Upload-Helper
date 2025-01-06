@@ -54,7 +54,7 @@ def callback(ch, method, properties, body):
 
     json_data = {
         'title': result[5],
-        'describe': result[6],
+        'description': result[6],
         'cover': "/ipfs/%s" % cover_hash,
         'files': [{
             'title': result[5],

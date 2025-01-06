@@ -42,6 +42,17 @@ def init_db():
 def random_id(length):
     return ''.join(random.choice(conf['video-key-range']) for _ in range(length))
 
+# 访问路径/index 函数
+@app.get("/latest")
+def latest():
+    conn = sqlite3.connect(conf['database'])
+    c = conn.cursor()
+    # 最近的100条视频，过滤id，hash，title，封面
+    c.execute("SELECT date, title, json_hash FROM videos WHERE json_hash != null ORDER BY id DESC LIMIT 100")
+    result = c.fetchall()
+    conn.close()
+    result = [{"date": i[0], "title": i[1], "json_hash": i[2]} for i in result]
+    return {"data": result, "player": conf['player']}
 
 
 # 访问路径/create_video 函数

@@ -76,7 +76,7 @@
 </template>
 <script setup>
 import Axios from 'axios'
-import {ref, onMounted, shallowRef, markRaw} from 'vue'
+import {ref} from 'vue'
 
 const video_list = ref([])
 const video_select = ref("")
